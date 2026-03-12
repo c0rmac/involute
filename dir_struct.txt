@@ -1,0 +1,45 @@
+involute/
+├── CMakeLists.txt                 # The Master Build Script (Backend Selector)
+├── include/                       # THE PUBLIC API (No MLX/SYCL headers here!)
+│   └── involute/
+│       ├── core/
+│       │   ├── tensor.hpp         # Opaque tensor wrapper using the Pimpl idiom
+│       │   ├── math.hpp           # Declarations for the 15 core math functions
+│       │   ├── objective.hpp      # Base class/Lambda interface for energy functions
+│       │   ├── result.hpp         # CBOResult struct for tracking history
+│       │   └── base_hopping.hpp   # Generic CBO looping logic
+│       └── solvers/               # The Manifold Optimizers
+│           ├── so_d.hpp           # SODHoppingSolver class definition
+│           └── stiefel.hpp        # StiefelHoppingSolver class definition
+│
+├── src/                           # THE IMPLEMENTATION
+│   └── backends/                  # THE HARDWARE DRIVERS (Only one compiles at a time)
+│       │
+│       ├── mlx/                   # Apple Silicon Engine (Uses <mlx/mlx.h>)
+│       │   ├── tensor_mlx.cpp     # Pimpl definition: holds the actual mx::array
+│       │   ├── math_mlx.cpp       # Maps involute::math::* to mlx::core::* calls
+│       │   ├── so_d_mlx.cpp       # AMX-accelerated Cayley transform & Consensus
+│       │   └── stiefel_mlx.cpp    # AMX-accelerated Batched SVD & QR
+│       │
+│       └── sycl/                  # PC GPU Engine (Uses <sycl/sycl.hpp> & oneMKL)
+│           ├── tensor_sycl.cpp    # Pimpl definition: holds the sycl::buffer pointer
+│           ├── math_sycl.cpp      # Maps involute::math::* to oneapi::mkl::* calls
+│           ├── so_d_sycl.cpp      # in-place LU factorization for Cayley
+│           └── stiefel_sycl.cpp   # Batched SVD & QR using MKL scratchpads
+│
+└── tests/                         # Unit Testing
+    ├── CMakeLists.txt              # Automatically finds and links all .cpp files
+    ├── unit/                       # TIER 1: The Math Primitives
+    │   ├── test_math_basic.cpp     # Arithmetics, exp, log, square
+    │   ├── test_math_linalg.cpp    # Matmul, solve, svd, transpose
+    │   └── test_math_reductions.cpp# Sum, min, weighted means
+    ├── geometric/                  # TIER 2: Manifold Sanity (The Constraints)
+    │   ├── test_so_d_geometry.cpp  # Verifies X^T X = I and det(X) = 1
+    │   └── test_stiefel_proj.cpp   # Verifies SVD/QR projections back to V(n, k)
+    ├── functional/                 # TIER 3: The "Experiments"
+    │   ├── exp_max_cut.cpp         # Finding Max-Cut on SO(d) relaxations
+    │   ├── exp_sync_rotations.cpp  # Solving the Rotation Averaging problem
+    │   └── exp_high_dim_scaling.cpp# Stress test: N=80,000, d=100
+    └── helpers/                    # Shared Utilities for tests
+        ├── test_utils.hpp          # Custom assertions (e.g., REQUIRE_ORTHOGONAL)
+        └── random_problems.hpp     # Generators for test cost functions
