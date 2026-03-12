@@ -16,6 +16,9 @@ Currently optimized exclusively for **macOS Apple Silicon (M-series)** via the A
 Involute is heavily optimized for M-series Macs using the Apple MLX backend. You can install it via our custom Homebrew tap:
 
 ```bash
+#0. Install MLX for macOS compatibility
+brew install mlx
+
 # 1. Tap the custom Involute repository
 brew tap c0rmac/homebrew-involute
 
