@@ -96,3 +96,6 @@ int main() {
 
     return 0;
 }
+```
+
+You can view the results for this setup <a href='./benchmarks.md#schwefel-function'>here</a>.
