@@ -26,6 +26,19 @@ brew tap c0rmac/homebrew-involute
 brew install involute
 ```
 
+Then in your CMakeLists.txt file:
+```cmake
+# 1. Locate the Involute package
+find_package(involute REQUIRED)
+
+# 2. Your executable
+add_executable(my_solver main.cpp)
+
+# 3. Link the Involute target
+# This automatically handles include paths and backend dependencies (like MLX)
+target_link_libraries(my_solver PRIVATE involute::involute)
+```
+
 ## ⚡️ Quick Start
 
 Below is an example of configuring and running the $SO(d)$ solver to find the global optimum of the highly non-convex **Ackley Function**, centered at the Identity matrix:
