@@ -22,7 +22,7 @@ endif ()
 # ==============================================================================
 # 2. Core Library Definition
 # ==============================================================================
-add_library(involute STATIC src/backends/mlx/tensor_impl_mlx.hpp)
+add_library(involute)
 
 target_sources(involute
         PUBLIC FILE_SET HEADERS
@@ -119,3 +119,17 @@ if (BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
 endif ()
+
+install(TARGETS involute
+        EXPORT InvoluteTargets
+        FILE_SET HEADERS
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+)
+
+install(EXPORT InvoluteTargets
+        FILE InvoluteTargets.cmake
+        NAMESPACE involute::
+        DESTINATION lib/cmake/involute
+)
