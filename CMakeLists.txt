@@ -133,3 +133,13 @@ install(EXPORT InvoluteTargets
         NAMESPACE involute::
         DESTINATION lib/cmake/involute
 )
+
+# Create a dummy config file so find_package(involute) works
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/involuteConfig.cmake"
+        "include(\"\${CMAKE_CURRENT_LIST_DIR}/InvoluteTargets.cmake\")"
+)
+
+# Install this new config file alongside your targets
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/involuteConfig.cmake"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/involute
+)
