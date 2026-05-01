@@ -1,15 +1,14 @@
 /**
  * @file result.hpp
  * @brief Defines the output structure for the Involute solvers.
- * * This file contains the CBOResult struct, which encapsulates the final
- * mathematical state of the swarm after the optimization loop terminates.
- * It ensures that the heavy GPU tensors and the scalar CPU metrics (like
- * final energy) are bundled together cleanly.
+ * * Refactored to support Product Manifolds: final_particles and
+ * final_consensus are now vectors of Tensors to match the BaseSolver interface.
  */
 
 #pragma once
 
 #include "involute/core/tensor.hpp"
+#include <vector>
 
 namespace involute::core {
     /**
@@ -30,55 +29,38 @@ namespace involute::core {
      * @brief Encapsulates the final state of a Consensus-Based Optimization run.
      * * When BaseSolver::solve() completes, it packages the final particle cloud
      * and convergence metrics into this struct.
-     * * @example
-     * // Running an experiment
-     * involute::solvers::SODHoppingSolver solver(config);
-     * involute::core::CBOResult result = solver.solve(&my_objective);
-     * * // Evaluating the outcome
-     * if (result.converged) {
-     * std::cout << "Success! Minimum energy found: " << result.min_energy << "\n";
-     * * // Extract the first matrix from the swarm to use as the final answer
-     * // (Assuming a function to slice the tensor exists in your math DSL)
-     * involute::Tensor best_matrix = involute::math::slice(result.final_X, 0);
-     * }
      */
     struct CBOResult {
-        /** * @brief The final tensor of the particle swarm.
-         * * For matrix manifolds like SO(d) or Stiefel, this will typically be a
-         * 3D Tensor of shape [N, d, d]. It resides in the backend's memory
-         * (MLX array or SYCL buffer) and represents the exact state of all N
-         * particles at the moment the solver halted.
+        /** * @brief The final state of the particle swarm.
+         * Each element in the vector represents a component of the product manifold.
+         * For example, in an SO(d) solver, this contains one Tensor of shape [N, d, d].
          */
-        Tensor final_particles;
+        std::vector<Tensor> final_particles;
 
-        Tensor final_consensus;
-
+        /**
+         * @brief The final consensus point (the Fréchet mean of the swarm).
+         * Represented as a vector of Tensors corresponding to each manifold component.
+         */
+        std::vector<Tensor> final_consensus;
 
         /** * @brief The lowest energy (cost) achieved by the swarm.
-         * * This is stored as a standard C++ double. It has already been pulled
-         * across the GPU-CPU bridge via math::to_double(), so reading this value
-         * incurs zero synchronization overhead.
+         * Stored as a double, typically extracted via math::to_double().
          */
         double min_energy{0.0};
 
         /** * @brief Indicates whether the solver met a convergence criterion.
-         * * If the solver halted because it hit a tolerance threshold (like
-         * EnergyToleranceCriterion), this is true. If it simply ran out of
-         * allowed steps (MaxStepsCriterion), you might treat the result with
-         * more skepticism.
+         * True if the loop terminated via a tolerance check (e.g., Energy or Consensus).
          */
         bool converged{false};
 
         /**
          * @brief The total number of iterations executed.
-         * * Useful for benchmarking how changes to the lambda/delta hyperparameters
-         * affect the speed of convergence.
          */
         int iterations_run{0};
 
         /**
          * @brief A step-by-step history of the optimization loop.
-         * Only populated if the solver's debug flag is set to true.
+         * Only populated if Debugger::History is enabled in SolverConfig.
          */
         std::vector<StepRecord> history;
     };

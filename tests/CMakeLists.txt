@@ -12,7 +12,11 @@ target_sources(test_helpers INTERFACE
 
 # 2. AUTO-DISCOVERY FUNCTION
 function(add_involute_test_dir dir_path)
-    file(GLOB TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/${dir_path}/*.cpp")
+    file(GLOB_RECURSE TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/${dir_path}/*.cpp")
+
+    # Exclude shared helper files (not test executables)
+    list(FILTER TEST_FILES EXCLUDE REGEX ".*/helpers/.*\\.cpp$")
+    list(FILTER TEST_FILES EXCLUDE REGEX ".*/functions/.*\\.cpp$")
 
     foreach(FILE IN LISTS TEST_FILES)
         get_filename_component(TARGET_NAME "${FILE}" NAME_WE)
