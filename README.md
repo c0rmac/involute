@@ -18,25 +18,33 @@ Involute depends on two companion libraries — [isomorphism](https://github.com
 
 ### 1. Choose a backend and install
 
-You must explicitly select a backend. No default is assumed.
+You must explicitly select a backend. Each backend is a separate formula — no flags required.
 
 **Apple MLX** — recommended on Apple Silicon (M1/M2/M3/M4), uses the Metal GPU:
 
 ```bash
 brew tap c0rmac/homebrew-isomorphism
-brew install c0rmac/homebrew-isomorphism/isomorphism --with-mlx
-brew install c0rmac/homebrew-involute/involute --with-mlx
+brew tap c0rmac/homebrew-riemannian-gaussian-sampler
+brew install c0rmac/homebrew-involute/involute-mlx
 ```
 
 **LibTorch** — for LibTorch / PyTorch users or non-Apple hardware:
 
 ```bash
 brew tap c0rmac/homebrew-isomorphism
-brew install c0rmac/homebrew-isomorphism/isomorphism --with-torch
-brew install c0rmac/homebrew-involute/involute --with-torch
+brew tap c0rmac/homebrew-riemannian-gaussian-sampler
+brew install c0rmac/homebrew-involute/involute-torch
 ```
 
-isomorphism must be installed first with the matching backend flag. The involute formula then resolves `riemannian-gaussian-sampler` automatically as a declared dependency — no separate tap or install step is needed for it.
+**Eigen** — lightweight CPU-only, no large framework dependency:
+
+```bash
+brew tap c0rmac/homebrew-isomorphism
+brew tap c0rmac/homebrew-riemannian-gaussian-sampler
+brew install c0rmac/homebrew-involute/involute-eigen
+```
+
+All other dependencies (`isomorphism`, `riemannian-gaussian-sampler`) are declared as formula dependencies and are installed automatically.
 
 ### 2. CMake integration
 
