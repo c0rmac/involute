@@ -14,37 +14,37 @@ A pre-print describing the theoretical foundations is expected in July 2026.
 
 ## 💻 Installation
 
-Involute depends on two companion libraries — [isomorphism](https://github.com/c0rmac/isomorphism) (hardware-accelerated tensor DSL) and [riemannian-gaussian-sampler](https://github.com/c0rmac/riemannian-gaussian-sampler) (exact spectral samplers for SO(d) and V(n,k)). The Homebrew formula fetches, taps, and installs both automatically.
+Involute depends on two companion libraries — [isomorphism](https://github.com/c0rmac/isomorphism) (hardware-accelerated tensor DSL) and [riemannian-gaussian-sampler](https://github.com/c0rmac/riemannian-gaussian-sampler) (exact spectral samplers for SO(d) and V(n,k)). Both are declared as Homebrew dependencies and installed automatically.
 
-### 1. Choose a backend and install
-
-You must explicitly select a backend. Each backend is a separate formula — no flags required.
-
-**Apple MLX** — recommended on Apple Silicon (M1/M2/M3/M4), uses the Metal GPU:
+### 1. Add the taps (once per machine)
 
 ```bash
 brew tap c0rmac/homebrew-isomorphism
 brew tap c0rmac/homebrew-riemannian-gaussian-sampler
-brew install c0rmac/homebrew-involute/involute-mlx
+brew tap c0rmac/homebrew-involute
+```
+
+### 2. Install the backend formula that matches your hardware
+
+**Apple MLX** — recommended on Apple Silicon (M1/M2/M3/M4), uses the Metal GPU:
+
+```bash
+brew install involute-mlx
 ```
 
 **LibTorch** — for LibTorch / PyTorch users or non-Apple hardware:
 
 ```bash
-brew tap c0rmac/homebrew-isomorphism
-brew tap c0rmac/homebrew-riemannian-gaussian-sampler
-brew install c0rmac/homebrew-involute/involute-torch
+brew install involute-torch
 ```
 
 **Eigen** — lightweight CPU-only, no large framework dependency:
 
 ```bash
-brew tap c0rmac/homebrew-isomorphism
-brew tap c0rmac/homebrew-riemannian-gaussian-sampler
-brew install c0rmac/homebrew-involute/involute-eigen
+brew install involute-eigen
 ```
 
-All other dependencies (`isomorphism`, `riemannian-gaussian-sampler`) are declared as formula dependencies and are installed automatically.
+Each formula pulls in the matching backend variant of `isomorphism` and `riemannian-gaussian-sampler` automatically.
 
 ### 2. CMake integration
 
