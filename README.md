@@ -303,9 +303,9 @@ int main() {
 
 *A pre-print is expected in July 2026.*
 
-**Consensus-Based Optimization (CBO)** maintains a swarm of $N$ particles $\{X^{(i)}\} \subset \mathcal{M}$ evolving under a coupled system of SDEs. Each particle drifts toward the *consensus point* $M_t$ — the Gibbs-weighted Fréchet mean of the ensemble, $M_t = \operatorname{arg\,min}_{y} \sum_i \omega^{(i)} d_g^2(y, X^{(i)})$ with $\omega^{(i)} \propto e^{-\beta \mathcal{E}(X^{(i)})}$ — while subject to metric-adjusted Stratonovich noise whose amplitude is proportional to each particle's geodesic distance from consensus:
+**Consensus-Based Optimization (CBO)** maintains a swarm of $N$ particles $\{X^{(i)}\} \subset \mathcal{M}$ evolving under a coupled system of SDEs. Each particle drifts toward the *consensus point* $M_t$ — the Gibbs-weighted Fréchet mean of the ensemble, $M_t = \text{argmin}_{y} \sum_i \omega^{(i)} d_g^2(y, X^{(i)})$ with $\omega^{(i)} \propto e^{-\beta \mathcal{E}(X^{(i)})}$ — while subject to metric-adjusted Stratonovich noise whose amplitude is proportional to each particle's geodesic distance from consensus:
 
-$$\mathrm{d}X^{(i)}_t = \lambda\,\mathrm{Log}_{X^{(i)}_t}(M_t)\,\mathrm{d}t + \sigma\, d_g\!\left(X^{(i)}_t,\, M_t\right) \circ \mathrm{d}B^{(i)}_t.$$
+$$\mathrm{d}X^{(i)}_t = \lambda\,\mathrm{Log}_{X^{(i)}_t}(M_t)\,\mathrm{d}t + \sigma\, d_g\left(X^{(i)}_t,\, M_t\right) \circ \mathrm{d}B^{(i)}_t.$$
 
 The metric-adjusted coefficient $\sigma\, d_g(X^{(i)}_t, M_t)$ ensures that particles far from consensus explore broadly while those near it are stabilized. The library exposes a solver operating directly on this SDE via Euler–Maruyama discretization on the manifold.
 
@@ -315,17 +315,17 @@ $$\mathrm{d}X^{(i)}_t = \lambda\,\mathrm{Log}_{X^{(i)}_t}(\widehat{M}_k)\,\mathr
 
 With $\widehat{M}_k$ frozen, the $N$ particles decouple into independent intrinsic Ornstein–Uhlenbeck processes, each with a unique global invariant measure — the Riemannian Gibbs distribution
 
-$$\mu_\infty(\mathrm{d}X) \propto \exp\!\left(-\frac{\lambda}{\delta^2}\, d_g^2(X,\, \widehat{M}_k)\right)\mathrm{d}\mu_g(X).$$
+$$\mu_\infty(\mathrm{d}X) \propto \exp\left(-\frac{\lambda}{\delta^2}\, d_g^2(X,\, \widehat{M}_k)\right)\mathrm{d}\mu_g(X).$$
 
 Rather than integrating this SDE forward — accumulating Euler–Maruyama error and risking constraint violation — each particle is replaced at each step by an exact i.i.d. draw from $\mu_\infty$, with the consensus recomputed from the new ensemble. This is the *consensus hopping* scheme: the swarm does not walk toward $\widehat{M}_k$ but samples geometrically exactly around it, eliminating temporal discretization error.
 
 Exact sampling from $\mu_\infty$ proceeds via a spectral factorization of the homogeneous space $\mathcal{M} = G/H$. Because $\mu_\infty$ depends on $X$ only through $d_g(X, \widehat{M}_k)$, the measure disintegrates over the reductive complement $\mathfrak{m}$ as
 
-$$\mu_\infty(\mathrm{d}X) = p_\infty(\theta)\,\mathrm{d}\theta \otimes \mathrm{Haar}_H(\mathrm{d}h),$$
+$$\mu_\infty(\mathrm{d}X) = p_\infty(\theta)\,\mathrm{d}\theta \otimes \mathrm{Haar}_H(\mathrm{d}h)$$
 
 where $\theta$ are the invariant *shape coordinates* (principal angles in the Weyl chamber) and $h \in H$ is the unobserved orientation fiber. Sampling from the full manifold distribution reduces to: (i) drawing $\theta$ from $p_\infty$ via sequential inverse-CDF transforms on precomputed conditional splines, and (ii) conjugating by a Haar-uniform $h \sim H$ to randomize the fiber. The shape density $p_\infty(\theta)$, governed by the manifold's restricted root system, encodes the curvature-induced eigenvalue repulsion exactly — ensuring the noise explores the full constraint space without bias or cut-locus divergence.
 
-Replacing the metric-adjusted noise with a fixed $\delta$ discards the first-order scaling that the original SDE carried: as the swarm clusters around $M_t$, the coefficient $\sigma\, d_g(X^{(i)}_t, M_t)$ naturally shrinks, providing implicit annealing that the isotropic OU limit does not reproduce. The **CMAES adapter** recovers this through cumulative step-size adaptation (CSA). At each step it computes the tangent displacement of the consensus $\delta_m = \mathrm{Log}_{\widehat{M}_{k-1}}(\widehat{M}_k)$ and uses it to update a cumulative evolution path $p_\sigma$ in $T_{\widehat{M}_k}\mathcal{M}$, parallel-transporting the historical path from the previous tangent space via the Adjoint action. The scalar $\delta$ is then adapted by comparing $\|p_\sigma\|$ against the expected norm $\mathbb{E}[\|\chi_D\|]$ of a $D$-dimensional standard normal: when the consensus moves consistently the path grows long and $\delta$ increases; when the swarm stagnates the path contracts and $\delta$ decays. This reintroduces the first-order dynamics lost in the passage to the isotropic OU limit, without introducing any directional covariance structure.
+Replacing the metric-adjusted noise with a fixed $\delta$ discards the first-order scaling that the original SDE carried: as the swarm clusters around $M_t$, the coefficient $\sigma d_g(X^{\(i)}\_t, M_t)$ naturally shrinks, providing implicit annealing that the isotropic OU limit does not reproduce. The **CMAES adapter** recovers this through cumulative step-size adaptation (CSA). At each step it computes the tangent displacement of the consensus $\delta_m = \mathrm{\ Log}\_{\\widehat{\ M}\_{\ k-1 }\ }\ (\widehat{\ M}\_{\ k}\)$ and uses it to update a cumulative evolution path $p_\sigma$ in $T_{\\widehat{\ M}\_{\ k}\}\ \mathcal{\ M }\$, parallel-transporting the historical path from the previous tangent space via the Adjoint action. The scalar $\delta$ is then adapted by comparing $\|p_\sigma\|$ against the expected norm $\mathbb{E}[\|\chi_D\|]$ of a $D$-dimensional standard normal: when the consensus moves consistently the path grows long and $\delta$ increases; when the swarm stagnates the path contracts and $\delta$ decays. This reintroduces the first-order dynamics lost in the passage to the isotropic OU limit, without introducing any directional covariance structure.
 
 ---
 
